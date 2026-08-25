@@ -1,0 +1,23 @@
+# netlify.toml — Wainwright Realty
+# Runs the posts index builder on every deploy, then serves the /site folder.
+
+[build]
+  command = "python scripts/build_posts_index.py"
+  publish = "site"
+
+# ── Netlify Identity: let the admin panel handle its own routing ──
+[[redirects]]
+  from  = "/admin"
+  to    = "/admin/index.html"
+  status = 200
+
+# ── Blog post URLs: /blog/my-post-slug/ → post.html (JS reads the slug) ──
+[[redirects]]
+  from  = "/blog/:slug"
+  to    = "/blog/post.html"
+  status = 200
+
+[[redirects]]
+  from  = "/blog/:slug/"
+  to    = "/blog/post.html"
+  status = 200

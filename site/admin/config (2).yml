@@ -1,0 +1,90 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Where uploaded images are stored and served from
+media_folder: "site/assets/img/blog"
+public_folder: "/assets/img/blog"
+
+site_url: https://dwainwrightrealty.com
+display_url: https://dwainwrightrealty.com
+logo_url: https://dwainwrightrealty.com/assets/img/logo.png
+
+# ──────────────────────────────────────────────
+# COLLECTIONS
+# ──────────────────────────────────────────────
+collections:
+
+  # ── BLOG / MARKET INSIGHTS ──
+  - name: "blog"
+    label: "Market Insights / Blog"
+    label_singular: "Post"
+    folder: "site/blog/posts"
+    create: true
+    delete: true
+    extension: "md"
+    format: "frontmatter"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} — {{date}}"
+    sortable_fields: ["date", "title", "category"]
+    view_filters:
+      - label: "Featured"
+        field: featured
+        pattern: true
+    view_groups:
+      - label: "Category"
+        field: category
+    fields:
+      - label: "Post Title"
+        name: "title"
+        widget: "string"
+        hint: "Keep it clear and specific — e.g. 'Morris County Market Update: July 2026'"
+
+      - label: "Publish Date"
+        name: "date"
+        widget: "datetime"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        default: ""
+
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        options:
+          - "Market Update"
+          - "REO & Foreclosure"
+          - "Commercial Real Estate"
+          - "Residential"
+          - "NRBA News"
+          - "Tips for Sellers"
+          - "Tips for Buyers"
+          - "Community"
+        default: "Market Update"
+
+      - label: "Featured Image"
+        name: "image"
+        widget: "image"
+        required: false
+        hint: "Recommended size: 1200 × 630 px. Will appear on the blog listing and at the top of the post."
+
+      - label: "Summary"
+        name: "summary"
+        widget: "text"
+        hint: "2–3 sentences shown on the blog listing page. Keep it punchy."
+
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
+        hint: "Write the full post here. Use headings, bullet points, and bold text to make it scannable."
+
+      - label: "Author"
+        name: "author"
+        widget: "string"
+        default: "David Wainwright Jr."
+        hint: "Leave as-is unless a guest is writing."
+
+      - label: "Feature on Homepage?"
+        name: "featured"
+        widget: "boolean"
+        default: false
+        hint: "If checked, this post may appear in the featured section on the homepage."
