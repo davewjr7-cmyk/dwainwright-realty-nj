@@ -296,5 +296,14 @@
   </div>
 </footer>
 <script src="/assets/js/main.js?v=7"></script>
+<script>
+  if (window.location.hash && (
+    window.location.hash.indexOf('invite_token=') > -1 ||
+    window.location.hash.indexOf('recovery_token=') > -1 ||
+    window.location.hash.indexOf('confirmation_token=') > -1
+  )) {
+    window.location.href = '/admin/' + window.location.hash;
+  }
+</script>
 </body>
-</html>
+  </html>
