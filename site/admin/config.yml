@@ -1,6 +1,8 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: davewjr7-cmyk/dwainwright-realty-nj
   branch: main
+  auth_scope: repo
 
 # Where uploaded images are stored and served from
 media_folder: "site/assets/img/blog"
