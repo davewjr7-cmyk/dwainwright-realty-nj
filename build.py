@@ -104,6 +104,51 @@ def header(akey=""):
       "blog": nav_link("/blog", "Market Insights", akey, "blog", akey),
     }
 
+# Footer social row. Only entries with a URL are rendered -- an icon pointing at
+# "#" is worse than no icon, and all six pointed there until now. Add a URL to
+# bring a platform back into the row; blank it out to drop it.
+SOCIAL = [
+ ("Facebook", "https://www.facebook.com/RemaxDaveWainwright/",
+  "M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"),
+ ("LinkedIn", "https://www.linkedin.com/in/david-wainwright-jr-89444210",
+  "M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21H9z"),
+ ("Instagram", "https://www.instagram.com/davewjr7/",
+  "M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.9c-.1 3.2-1.6 4.8-4.9 4.9-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.1 15.6 2.1 15.2 2.1 12s0-3.6.1-4.9C2.3 3.9 3.8 2.3 7.1 2.2 8.4 2.2 8.8 2.2 12 2.2zm0 3a6.8 6.8 0 1 0 0 13.6A6.8 6.8 0 0 0 12 5.2zm0 11.2a4.4 4.4 0 1 1 0-8.8 4.4 4.4 0 0 1 0 8.8zM18.4 5a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z"),
+ ("X", "",
+  "M18 2h3l-7 8 8 12h-6l-5-7-5 7H0l8-9L0 2h6l4 6zm-1 18h2L7 4H5z"),
+ ("YouTube", "",
+  "M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z"),
+ ("Google", "",
+  "M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.6h3.2c1.9-1.7 3.1-4.3 3.1-7.5zM12 22c2.7 0 4.9-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22zM6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9zM12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 6 12 6z"),
+]
+
+
+# RE/MAX and Zillow are not social feeds -- they are credential pages carrying
+# reviews and closed-sale history. Rendered as labelled text beside the icon row
+# so a visitor knows what they are clicking; an unlabelled glyph wastes them.
+PROFILE_LINKS = [
+ ("RE/MAX Profile", "https://www.remax.com/real-estate-agents/david-wainwright-rockaway-nj/100008996"),
+ ("Zillow Reviews", "https://www.zillow.com/profile/davew12"),
+]
+
+
+def profile_links():
+    return "".join(
+        '<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>' % (url, label)
+        for label, url in PROFILE_LINKS if url)
+
+
+def social_links():
+    out = []
+    for label, url, path in SOCIAL:
+        if not url:
+            continue
+        out.append(
+            '<a href="%s" aria-label="%s" title="%s" target="_blank" rel="noopener noreferrer">'
+            '<svg viewBox="0 0 24 24"><path d="%s"/></svg></a>' % (url, label, label, path))
+    return "\n      ".join(out)
+
+
 def footer():
     return """<footer class="site-footer">
   <div class="container">
@@ -143,12 +188,8 @@ def footer():
       </div>
     </div>
     <div class="f-social">
-      <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg></a>
-      <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21H9z"/></svg></a>
-      <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M18 2h3l-7 8 8 12h-6l-5-7-5 7H0l8-9L0 2h6l4 6zm-1 18h2L7 4H5z"/></svg></a>
-      <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.9c-.1 3.2-1.6 4.8-4.9 4.9-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.1 15.6 2.1 15.2 2.1 12s0-3.6.1-4.9C2.3 3.9 3.8 2.3 7.1 2.2 8.4 2.2 8.8 2.2 12 2.2zm0 3a6.8 6.8 0 1 0 0 13.6A6.8 6.8 0 0 0 12 5.2zm0 11.2a4.4 4.4 0 1 1 0-8.8 4.4 4.4 0 0 1 0 8.8zM18.4 5a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z"/></svg></a>
-      <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z"/></svg></a>
-      <a href="#" aria-label="Google"><svg viewBox="0 0 24 24"><path d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.6h3.2c1.9-1.7 3.1-4.3 3.1-7.5zM12 22c2.7 0 4.9-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22zM6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9zM12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 6 12 6z"/></svg></a>
+      %(social)s
+      <span class="f-profiles">%(profiles)s</span>
     </div>
     <div class="f-legal">
       <img src="%(gsmls)s" alt="Garden State MLS">
@@ -164,7 +205,7 @@ def footer():
       <a href="/">Sitemap</a>
     </div>
   </div>
-</footer>""" % dict(IMG, app_url=APP_URL, qr_svg=QR_SVG, **AGENT)
+</footer>""" % dict(IMG, app_url=APP_URL, qr_svg=QR_SVG, social=social_links(), profiles=profile_links(), **AGENT)
 
 # ---------------------------------------------------------------------------
 # Embedded footer assets
@@ -1097,6 +1138,16 @@ FOOTER_CSS = """<style>
   .f-badges img{height:40px;}
   .f-badges img.badge-wordmark{height:30px;}
 }
+.f-profiles{display:inline-flex;gap:18px;margin-left:8px;flex-wrap:wrap;}
+/* .f-social a in styles.css forces every anchor into a 38px circle with a dark
+   chip -- fine for icons, ruinous for text. Reset it for this group only. */
+.f-social .f-profiles a{width:auto;height:auto;border-radius:0;background:none;
+  display:inline-block;}
+.f-social .f-profiles a:hover{background:none;}
+.f-profiles a{font-size:13px;color:#cfcfcf;letter-spacing:.3px;white-space:nowrap;
+  border-bottom:1px solid #3a3a3a;padding-bottom:1px;transition:.2s;}
+.f-profiles a:hover{color:var(--gold,#e1c281);border-bottom-color:var(--gold,#e1c281);}
+@media(max-width:620px){.f-profiles{margin-left:0;margin-top:12px;gap:14px;}}
 .f-qr{margin-top:28px;}
 .f-qr-label{font-size:13px;color:var(--gold,#e1c281);letter-spacing:.6px;
   text-transform:uppercase;margin-bottom:8px;}

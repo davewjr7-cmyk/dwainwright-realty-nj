@@ -255,6 +255,14 @@ def run(g):
   text-align:center;max-width:800px;margin:0 auto 30px;letter-spacing:-.15px;}
 .prose p.comm-lede strong{font-weight:700;}
 @media(max-width:760px){.prose p.comm-lede{font-size:19px;text-align:left;}}
+.bp-row{margin-top:44px;padding:26px 28px;border:1px solid var(--line,#e6e6e6);
+  border-radius:10px;background:#fafafa;}
+.bp-row h3{margin:0 0 8px;font-size:19px;font-weight:600;color:#161616;}
+.bp-row p{margin:0 0 16px;font-size:15px;color:#555;max-width:640px;line-height:1.55;}
+.bp-links{display:flex;flex-wrap:wrap;gap:12px;}
+a.bp-link{display:inline-block;padding:10px 20px;border-radius:6px;font-size:14px;
+  font-weight:600;background:#161616;color:#fff;transition:.2s;}
+a.bp-link:hover{background:var(--bronze,#af7b34);color:#fff;}
 .sc-thumbs{display:flex;gap:3px;}
 .sc-thumbs span{flex:1;height:56px;background-size:cover;background-position:center;background-color:#ececec;}
 .sc-specs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
@@ -497,6 +505,26 @@ assignment through closing &mdash; is available on request.</p>
         "Closed transactions represented by David Wainwright Jr &mdash; REO, commercial and residential."
     ) + (sold_sections() if SOLD else (SOLD_EMPTY + stats_block()))
 
+    # Public broker profiles. These are the outward-facing pages on LoopNet and on
+    # CoStar's consumer site (Showcase) -- NOT listingmanager.costar.com, which is
+    # the logged-in admin console and useless to a visitor. They back up the claim
+    # in the page copy that commercial gets marketed outside the residential MLS.
+    BROKER_PROFILES = [
+        ("LoopNet", "https://www.loopnet.com/commercial-real-estate-brokers/profile/dave-wainwright-jr/09f7t11b"),
+        ("CoStar Showcase", "https://www.showcase.com/p/dave-wainwright-jr/2085983/"),
+    ]
+
+    def broker_profiles_block():
+        links = " ".join(
+            '<a class="bp-link" href="%s" target="_blank" rel="noopener noreferrer">%s</a>' % (u, n)
+            for n, u in BROKER_PROFILES)
+        return """<div class="bp-row">
+<h3>Also listed on the commercial networks</h3>
+<p>Active commercial and industrial listings are marketed where commercial buyers
+search. See the full portfolio on either platform:</p>
+<div class="bp-links">%s</div>
+</div>""" % links
+
     def commercial_closed_block():
         """Commercial content for /commercial, drawn from the same list.
 
@@ -674,7 +702,8 @@ assignment through closing &mdash; is available on request.</p>
 </div>
 <div class="mid-search">%(search)s</div>
 %(closed)s
-</div></section>""" % {"search": search_widget(), "closed": commercial_closed_block()}
+%(profiles)s
+</div></section>""" % {"search": search_widget(), "closed": commercial_closed_block(), "profiles": broker_profiles_block()}
     page("commercial", "Commercial Real Estate in NJ & NY | David Wainwright Jr, RE/MAX Select",
          "Commercial and mixed-use real estate services for buyers, sellers and investors in NJ & NY.",
          commercial_body, akey="commercial", extra_head=SOLD_CSS)
