@@ -10,7 +10,7 @@ public_folder: "/assets/img/blog"
 
 site_url: https://dwainwrightrealty.com
 display_url: https://dwainwrightrealty.com
-logo_url: https://dwainwrightrealty.com/assets/img/logo.png
+logo_url: https://dwainwrightrealty.com/assets/img/d67b83e87866.webp
 
 # ──────────────────────────────────────────────
 # COLLECTIONS
@@ -134,7 +134,7 @@ collections:
                   - { label: "On Market", value: "active" }
                 hint: "Under Contract means an executed purchase and sale agreement. Use Letter of Intent for a signed LOI with no PSA yet — they are not the same thing."
 
-              - label: "Property Type"
+              - label: "Section"
                 name: "category"
                 widget: "select"
                 default: "residential"
@@ -142,13 +142,43 @@ collections:
                   - { label: "REO / Foreclosure", value: "reo" }
                   - { label: "Commercial / Multi-Family", value: "commercial" }
                   - { label: "Residential", value: "residential" }
-                hint: "Controls which section of the page it appears in."
+                hint: "Which heading it appears under on the Sold Listings page."
 
-              - label: "Photo"
-                name: "photo"
-                widget: "image"
+              - label: "Property Type"
+                name: "prop_type"
+                widget: "select"
                 required: false
-                hint: "Landscape works best, roughly 800 x 500. Only use photos you have the rights to publish."
+                options:
+                  - "Industrial"
+                  - "Warehouse / Flex"
+                  - "Office"
+                  - "Retail"
+                  - "Mixed-Use"
+                  - "Multi-Family"
+                  - "Land"
+                  - "Single Family"
+                  - "Condo"
+                hint: "The specific asset type. Shows as a tag on the card."
+
+              - label: "Building Size (SF)"
+                name: "sqft"
+                widget: "number"
+                required: false
+                value_type: "int"
+                hint: "Square feet, digits only — e.g. 42000. Shows as '42,000 SF'."
+
+              - label: "Property Description"
+                name: "description"
+                widget: "text"
+                required: false
+                hint: "A paragraph or two. What it is, why it matters, who it suits. Blank lines start a new paragraph. Do not include anything confidential to the seller."
+
+              - label: "Photos"
+                name: "photos"
+                widget: "list"
+                required: false
+                field: { label: "Photo", name: "image", widget: "image" }
+                hint: "First photo is the large one; the rest appear as a strip beneath it. Up to 5 show. Only photos you have the right to publish."
 
               - label: "Price"
                 name: "price"
