@@ -247,6 +247,14 @@ def run(g):
    homepage. Mid-page (commercial) that yanks it up over the paragraph above,
    so the wrapper cancels it here. */
 .mid-search .search-widget{margin-top:28px;}
+/* Opening line of the commercial page. Set as a centred lede -- larger, a touch
+   heavier and on a narrower measure than body copy, so it reads as a statement
+   rather than as the first of four paragraphs. */
+.comm-intro{padding-top:34px;}
+.prose p.comm-lede{font-size:21.5px;line-height:1.55;font-weight:500;color:#1a1a1a;
+  text-align:center;max-width:800px;margin:0 auto 30px;letter-spacing:-.15px;}
+.prose p.comm-lede strong{font-weight:700;}
+@media(max-width:760px){.prose p.comm-lede{font-size:19px;text-align:left;}}
 .sc-thumbs{display:flex;gap:3px;}
 .sc-thumbs span{flex:1;height:56px;background-size:cover;background-position:center;background-color:#ececec;}
 .sc-specs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
@@ -657,9 +665,9 @@ assignment through closing &mdash; is available on request.</p>
 
     # ---------------- COMMERCIAL ----------------
     commercial_body = head_block("Search for Commercial Properties", "Commercial and mixed-use real estate expertise across New Jersey and New York.") + """
-<section class="section"><div class="container">
+<section class="section comm-intro"><div class="container">
 <div class="prose" style="max-width:900px">
-<p>Commercial property is where valuation experience earns its keep. Across thirty years in New Jersey we have completed more than 4,000 broker price opinions and taken over 1,000 REO assets from assignment through disposition. That work builds one habit above all others: pricing a building on what the market will actually pay, not on what anyone hopes it is worth.</p>
+<p class="comm-lede">Commercial property is where <strong>valuation experience</strong> earns its keep. Across thirty years in New Jersey we have completed more than 4,000 broker price opinions and taken over 1,000 REO assets from assignment through disposition. That work builds one habit above all others: pricing a building on what the market will actually pay, not on what anyone hopes it is worth.</p>
 <p>We represent buyers and sellers across industrial and flex space, office, retail, mixed-use and multi-family throughout New Jersey and New York. Small and mid-size commercial gets overlooked by the national firms &mdash; which is exactly the segment regional investors are hunting, and the one we know best.</p>
 <p>Commercial rarely sells out of the residential MLS. We market where commercial buyers actually look: LoopNet, CoStar, direct to an investor and REO network built over three decades, and quietly off-market when discretion serves the seller better than exposure does.</p>
 <p>Whether you are selling, acquiring, or you simply need a defensible number before deciding anything &mdash; start with a conversation.</p>
