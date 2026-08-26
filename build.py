@@ -27,7 +27,7 @@ AGENT = {
  "brand": "RE/MAX SELECT",
  "phone": "+1 (973) 818-7100",
  "phone_href": "+19738187100",
- "email": "davewainwright@morrisagent.com",
+ "email": "dave@dwainwrightrealty.com",
  "license": "8744778",
  "address": "20 W Main St, Rockaway, NJ 07866, USA",
 }
