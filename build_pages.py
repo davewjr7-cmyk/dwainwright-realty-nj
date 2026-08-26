@@ -224,7 +224,7 @@ def run(g):
          featured_body, akey="buy")
 
     SOLD_CSS = """<style>
-.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;margin-top:22px;}
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-top:22px;}
 .sc-card{border:1px solid var(--line,#e6e6e6);border-radius:10px;background:#fff;overflow:hidden;
   transition:box-shadow .2s ease,transform .2s ease;}
 .sc-body{padding:18px 20px;}
@@ -243,6 +243,19 @@ def run(g):
 .sc-stat-n{font-size:42px;font-weight:800;color:var(--bronze,#af7b34);letter-spacing:-1px;line-height:1;}
 .sc-stat-l{margin-top:8px;font-size:14px;color:#555;}
 .sc-meta .sc-pending{background:#fdf0d5;color:#8a5b00;}
+/* .search-widget carries margin-top:-64px so it tucks under the hero on the
+   homepage. Mid-page (commercial) that yanks it up over the paragraph above,
+   so the wrapper cancels it here. */
+.mid-search .search-widget{margin-top:28px;}
+.sc-thumbs{display:flex;gap:3px;}
+.sc-thumbs span{flex:1;height:56px;background-size:cover;background-position:center;background-color:#ececec;}
+.sc-specs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.sc-specs span{font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;
+  background:#f4f0e6;color:#6b4d16;letter-spacing:.2px;}
+.sc-specs .sc-sqft{background:#eef1f4;color:#33475b;}
+.sc-desc{margin-top:12px;font-size:14px;color:#444;line-height:1.6;}
+.sc-desc p{margin:0 0 9px;}
+.sc-desc p:last-child{margin-bottom:0;}
 .sc-note{margin-top:11px;font-size:13.5px;color:#555;line-height:1.45;}
 </style>"""
 
@@ -274,6 +287,13 @@ def run(g):
     #   side      : "Listed" | "Sold" | "Both"
     #   source    : "GSMLS" | "LoopNet" | "CoStar" | "Off-market"
     #   note      : short free-text line, e.g. "16-unit stabilized building"
+    #   prop_type : specific asset type -- "Industrial", "Office", "Retail",
+    #               "Mixed-Use", "Multi-Family", "Land", "Warehouse / Flex",
+    #               "Single Family", "Condo". Shown as a chip.
+    #   sqft      : building size, number. Rendered with thousands separators.
+    #   description : full paragraph(s). Line breaks become paragraphs.
+    #   photos    : list of image paths. First is the hero, the rest render as
+    #               a thumbnail strip. Legacy single "photo" key still works.
     #
     # NOTE: this list is for transactions Dave REPRESENTED -- listed, sold, or
     # under contract. BPO assignments do NOT belong here. A BPO is confidential
@@ -364,19 +384,48 @@ def run(g):
             # Worth surfacing: it signals reach beyond the residential MLS.
             bits.append('<span class="sc-src">%s</span>' % esc(row["source"]))
         meta = '<div class="sc-meta">%s</div>' % "".join(bits) if bits else ""
-        photo = ('<div class="sc-photo" style="background-image:url(\'%s\')"></div>'
-                 % esc(row["photo"])) if row.get("photo") else ""
+
+        specs = []
+        if row.get("prop_type"):
+            specs.append('<span class="sc-type">%s</span>' % esc(row["prop_type"]))
+        if row.get("sqft"):
+            try:
+                specs.append('<span class="sc-sqft">%s SF</span>'
+                             % format(int(row["sqft"]), ","))
+            except (TypeError, ValueError):
+                pass
+        specs_html = '<div class="sc-specs">%s</div>' % "".join(specs) if specs else ""
+
+        desc = ""
+        if row.get("description"):
+            paras = [q.strip() for q in str(row["description"]).split("\n") if q.strip()]
+            desc = '<div class="sc-desc">%s</div>' % "".join(
+                "<p>%s</p>" % esc(q) for q in paras)
+        # photos: accept a list, or a single legacy "photo" key
+        shots = row.get("photos") or ([row["photo"]] if row.get("photo") else [])
+        shots = [s for s in shots if s]
+        photo = ""
+        if shots:
+            photo = ('<div class="sc-photo" style="background-image:url(\'%s\')"></div>'
+                     % esc(shots[0]))
+            if len(shots) > 1:
+                photo += '<div class="sc-thumbs">%s</div>' % "".join(
+                    '<span style="background-image:url(\'%s\')"></span>' % esc(s)
+                    for s in shots[1:5])
         return """<article class="sc-card%(pcls)s">
       %(photo)s
       <div class="sc-body">
       <div class="sc-price">%(price)s</div>
       <div class="sc-addr">%(a1)s</div>
       <div class="sc-sub">%(a2)s</div>
+      %(specs)s
       %(meta)s
       %(note)s
+      %(desc)s
       </div>
     </article>""" % {
             "photo": photo, "pcls": " sc-has-photo" if photo else "",
+            "specs": specs_html, "desc": desc,
             "price": (money(price) if price else {
                           "under_contract": "Under Contract",
                           "loi": "Letter of Intent",
@@ -441,14 +490,27 @@ assignment through closing &mdash; is available on request.</p>
     ) + (sold_sections() if SOLD else (SOLD_EMPTY + stats_block()))
 
     def commercial_closed_block():
-        """Commercial track record for /commercial, drawn from the same list."""
+        """Commercial content for /commercial, drawn from the same list.
+
+        Split in two: what is available or working right now, and what has
+        already closed. A buyer wants the first; a prospective seller judging
+        whether to hire Dave wants the second."""
         rows = [r for r in SOLD if r.get("category") == "commercial"]
-        if not rows:
-            return ""
-        return """<div style="margin-top:34px">
+        current = [r for r in rows if r.get("status") in ("active", "loi", "under_contract")]
+        closed = [r for r in rows if r.get("status", "closed") == "closed"]
+        out = []
+        if current:
+            out.append("""<div style="margin-top:38px">
+<h2 class="section-title">Current Commercial Listings</h2>
+<p class="lead">Available now, under agreement, or in negotiation.</p>
+<div class="sc-grid">%s</div>
+</div>""" % "\n".join(sold_card(r) for r in current))
+        if closed:
+            out.append("""<div style="margin-top:38px">
 <h2 class="section-title">Recent Commercial Transactions</h2>
 <div class="sc-grid">%s</div>
-</div>""" % "\n".join(sold_card(r) for r in rows)
+</div>""" % "\n".join(sold_card(r) for r in closed))
+        return "\n".join(out)
     page("sold-listing", "Sold Listings | David Wainwright Jr, RE/MAX Select",
          "Recently sold homes and commercial properties represented by David Wainwright Jr.",
          sold_body, akey="buy", extra_head=SOLD_CSS)
@@ -600,7 +662,7 @@ assignment through closing &mdash; is available on request.</p>
 <p>We have years of experience representing buyers and sellers of commercial properties in New Jersey and New York. Many properties are mixed-use as well &mdash; we&rsquo;ll help you navigate the neighborhoods to find the best fit or the best buyer.</p>
 <p>It&rsquo;s worth noting that small commercial properties often catch the eye of local investors rather than large national firms. That&rsquo;s where we shine! Need assistance with valuation or disposal of your commercial assets? Don&rsquo;t hesitate to reach out.</p>
 </div>
-%(search)s
+<div class="mid-search">%(search)s</div>
 %(closed)s
 </div></section>""" % {"search": search_widget(), "closed": commercial_closed_block()}
     page("commercial", "Commercial Real Estate in NJ & NY | David Wainwright Jr, RE/MAX Select",
