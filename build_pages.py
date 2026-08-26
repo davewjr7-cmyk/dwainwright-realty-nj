@@ -72,10 +72,29 @@ def run(g):
   <div class="fello-embed">%s</div>
 </div></section>""" % (heading, sub, FELLO_WIDGET)
 
-    # --- Ruuster IDX search embed (Morris Agent Team consumer search) ---
-    RUUSTER_SEARCH = ('<div class="ruuster-embed">'
-        '<iframe src="https://morrisagentteam.ruuster.com/listings?slug=glen-baker&status=Active" '
-        'title="Search Listings — Morris Agent Team, RE/MAX Select" loading="lazy"></iframe></div>')
+    # --- Ruuster IDX search embeds -------------------------------------------
+    # RUUSTER_BASE is the team's consumer portal. Two embeds are built from it:
+    #   * "my listings"  -- filtered to David P Wainwright  (MLS ID 234919)
+    #   * "team search"  -- the unfiltered NJ/NY MLS search, kept as the fallback
+    #
+    # DAVE_SLUG is the only thing that needs filling in. Ruuster's public embed
+    # keys off the agent slug, not the MLS ID, so the MLS ID is carried alongside
+    # for display/attribution only. Until the slug is confirmed, DAVE_SLUG stays
+    # empty and the page degrades to the team search alone -- an empty filtered
+    # iframe would look broken, which is worse than not showing the section.
+    RUUSTER_BASE = "https://morrisagentteam.ruuster.com/listings"
+    DAVE_SLUG = ""          # e.g. "david-wainwright" — confirm in the Ruuster portal
+    DAVE_MLS_ID = "234919"
+    TEAM_SLUG = "glen-baker"
+
+    def ruuster_embed(slug, title, extra=""):
+        src = "%s?slug=%s&status=Active%s" % (RUUSTER_BASE, slug, extra)
+        return ('<div class="ruuster-embed"><iframe src="%s" title="%s" '
+                'loading="lazy"></iframe></div>' % (src, title))
+
+    RUUSTER_MINE = (ruuster_embed(DAVE_SLUG, "David Wainwright Jr — My Active Listings")
+                    if DAVE_SLUG else "")
+    RUUSTER_SEARCH = ruuster_embed(TEAM_SLUG, "Search Listings — Morris Agent Team, RE/MAX Select")
 
     # ---------------- HOME ----------------
     home = """
@@ -161,14 +180,37 @@ def run(g):
         return '<section class="page-head"><div class="container"><h1>%s</h1>%s</div></section>' % (title, s)
 
     # ---------------- BUY / LISTINGS ----------------
-    listings_body = head_block("Search Listings in NJ &amp; NY", "Search every active MLS listing across New Jersey and New York &mdash; powered by Morris Agent Team, RE/MAX Select.") + """
+    # "My Listings" leads the page. Source of truth, in order of preference:
+    #   1. a Ruuster embed filtered to Dave's slug (live, self-updating)
+    #   2. the hand-captured DAVE_LISTINGS carousel
+    #   3. nothing -- fall straight through to the team search
+    if RUUSTER_MINE:
+        mine_block = """
 <section class="section" style="padding-top:40px"><div class="container">
+<h2 class="section-title">My Listings</h2>
+<p class="lead">Active listings represented by David Wainwright Jr &mdash; MLS ID %(mls)s.</p>
+%(embed)s
+</div></section>""" % {"mls": DAVE_MLS_ID, "embed": RUUSTER_MINE}
+    elif DAVE_LISTINGS:
+        mine_block = """
+<section class="section" style="padding-top:40px"><div class="container">
+<h2 class="section-title">My Listings</h2>
+<p class="lead">Active listings represented by David Wainwright Jr &mdash; MLS ID %(mls)s.</p>
+%(cards)s
+</div></section>""" % {"mls": DAVE_MLS_ID, "cards": listing_grid(DAVE_LISTINGS)}
+    else:
+        mine_block = ""
+
+    listings_body = head_block("Search Listings in NJ &amp; NY", "Search every active MLS listing across New Jersey and New York &mdash; powered by Morris Agent Team, RE/MAX Select.") + mine_block + """
+<section class="section%(band)s" style="padding-top:40px"><div class="container">
+<h2 class="section-title">Search All NJ &amp; NY Listings</h2>
 %(ruuster)s
 </div></section>
 <section class="section band"><div class="container">
 <h2 class="section-title">Featured Team Listings</h2>
 %(carousel)s
-</div></section>""" % {"ruuster": RUUSTER_SEARCH, "carousel": listing_carousel(ALL_LISTINGS)}
+</div></section>""" % {"ruuster": RUUSTER_SEARCH, "carousel": listing_carousel(TEAM_LISTINGS),
+                       "band": " band" if mine_block else ""}
     page("listing", "Buy — Listings | David Wainwright Jr, RE/MAX Select",
          "Browse residential and commercial real estate listings across NJ & NY with David Wainwright Jr.",
          listings_body, akey="buy")

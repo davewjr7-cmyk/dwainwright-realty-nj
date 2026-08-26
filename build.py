@@ -16,10 +16,13 @@ IMG = {
  "b_morris": "/assets/img/73fafb1d39ea.webp",
  "b_passaic": "/assets/img/cab88798f894.webp",
  "b_sussex": "/assets/img/4326737f69fc.webp",
- "badge1": "/assets/img/ef4b897f55ce.webp",
- "badge2": "/assets/img/bc966ce70a04.webp",
- "badge3": "/assets/img/c0147f11c574.webp",
- "badge4": "/assets/img/02546ac8b725.webp",
+ # Footer credential row. All four are transparent PNG/WebP with light artwork,
+ # sized to sit directly on the black footer -- no white chip behind them.
+ "badge1": "/assets/img/ef4b897f55ce.webp",   # RE/MAX SELECT | Morris Agent Team
+ "badge2": "/assets/img/bc966ce70a04.webp",   # Wainwright Realty NJ | NY
+ "badge3": "/assets/img/c0147f11c574.webp",   # NRBA NJ Master Broker
+ "badge4": "/assets/img/02546ac8b725.webp",   # Certified Short Sale Expert (CSSE)
+ "qr": "/assets/img/get-my-app-qr.webp",
 }
 
 AGENT = {
@@ -29,8 +32,13 @@ AGENT = {
  "phone_href": "+19738187100",
  "email": "dave@dwainwrightrealty.com",
  "license": "8744778",
+ "mls_id": "234919",
  "address": "20 W Main St, Rockaway, NJ 07866, USA",
 }
+
+# Where the footer "Get My App" QR points. Swap this one string to repoint the
+# QR; regenerate the image with tools/make_qr.py after changing it.
+APP_URL = "https://dwainwrightrealty.com/"
 
 HOUSE_SVG = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">'
  '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>')
@@ -101,17 +109,20 @@ def footer():
         <h3>%(name)s</h3>
         <p><a href="tel:%(phone_href)s">%(phone)s</a></p>
         <p><a href="mailto:%(email)s">%(email)s</a></p>
-        <p>License ID: %(license)s</p>
+        <p>License ID: %(license)s &nbsp;&middot;&nbsp; MLS ID: %(mls_id)s</p>
         <p>%(address)s</p>
         <div class="f-badges">
-          <img src="%(badge1)s" alt="Credential badge">
-          <img src="%(badge2)s" alt="Credential badge">
-          <img src="%(badge3)s" alt="REO / broker credential">
-          <img src="%(badge4)s" alt="Certification badge">
+          <img src="%(badge1)s" alt="RE/MAX Select — Morris Agent Team" loading="lazy">
+          <img src="%(badge2)s" alt="Wainwright Realty — New Jersey and New York" loading="lazy">
+          <img src="%(badge3)s" alt="NRBA National REO Brokers Association — NJ Master Broker" loading="lazy">
+          <img src="%(badge4)s" alt="Certified Short Sale Expert (CSSE)" loading="lazy">
         </div>
         <div class="f-qr">
-          <div style="font-size:13px;color:#bdbdbd;margin-bottom:8px;">Get My App</div>
-          <div class="qr">Scan&nbsp;for&nbsp;app</div>
+          <div class="f-qr-label">Get My App</div>
+          <a class="qr" href="%(app_url)s" title="Open the app">
+            <img src="%(qr)s" alt="QR code — scan to open David Wainwright Jr's app" loading="lazy">
+          </a>
+          <div class="f-qr-hint">Scan with your phone</div>
         </div>
       </div>
       <div class="f-nav">
@@ -151,7 +162,7 @@ def footer():
       <a href="/">Sitemap</a>
     </div>
   </div>
-</footer>""" % dict(IMG, **AGENT)
+</footer>""" % dict(IMG, app_url=APP_URL, **AGENT)
 
 def page(path, title, description, body, akey="", extra_head=""):
     doc = """<!DOCTYPE html>
@@ -164,7 +175,7 @@ def page(path, title, description, body, akey="", extra_head=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/styles.css?v=7">
+<link rel="stylesheet" href="/assets/css/styles.css?v=8">
 %(extra)s
 </head>
 <body>
