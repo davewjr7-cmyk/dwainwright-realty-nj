@@ -223,14 +223,235 @@ def run(g):
          "Featured residential and commercial listings from David Wainwright Jr, RE/MAX Select.",
          featured_body, akey="buy")
 
-    sold_body = head_block("Sold Listings", "A selection of recently closed transactions.") + """
-<section class="section"><div class="container">
-<div class="cards">%(com)s</div>
-%(ph)s
-</div></section>""" % {"com": COM, "ph": PH}
+    SOLD_CSS = """<style>
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;margin-top:22px;}
+.sc-card{border:1px solid var(--line,#e6e6e6);border-radius:10px;background:#fff;overflow:hidden;
+  transition:box-shadow .2s ease,transform .2s ease;}
+.sc-body{padding:18px 20px;}
+.sc-photo{height:172px;background-size:cover;background-position:center;background-color:#ececec;}
+.sc-has-photo .sc-body{padding-top:16px;}
+.sc-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.08);transform:translateY(-2px);}
+.sc-price{font-size:22px;font-weight:700;color:#111;letter-spacing:-.3px;}
+.sc-addr{margin-top:6px;font-weight:600;color:#222;}
+.sc-sub{color:#666;font-size:14px;margin-top:2px;}
+.sc-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.sc-meta span{font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;padding:4px 9px;
+  border-radius:999px;background:#f2f2f2;color:#555;}
+.sc-meta .sc-side{background:#efe2c6;color:#6b4d16;}
+.sc-meta .sc-src{background:#e9eef7;color:#2c4a7c;}
+.sc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;text-align:center;}
+.sc-stat-n{font-size:42px;font-weight:800;color:var(--bronze,#af7b34);letter-spacing:-1px;line-height:1;}
+.sc-stat-l{margin-top:8px;font-size:14px;color:#555;}
+.sc-meta .sc-pending{background:#fdf0d5;color:#8a5b00;}
+.sc-note{margin-top:11px;font-size:13.5px;color:#555;line-height:1.45;}
+</style>"""
+
+    # --- Closed transactions -------------------------------------------------
+    # Populate SOLD from a GSMLS closed-transaction export. Until it has rows the
+    # page shows an honest empty state -- it must never fall back to the sample
+    # cards, which are other brokerages' ACTIVE listings and were being presented
+    # here as Dave's closed business.
+    #
+    # Rows come from site/_data/sold.json when that file exists, so the list can
+    # be edited in the CMS at /admin/ without touching this file. Anything in
+    # SOLD_INLINE below is appended -- useful for one-offs.
+    #
+    # Deliberately NOT tied to an MLS feed: much of this work never appears in
+    # GSMLS at all. Commercial deals live in LoopNet/CoStar, and off-market and
+    # REO dispositions are often never listed publicly. A curated list is the
+    # only source that can represent the whole book of business.
+    #
+    # Row shape (all keys optional except addr1 and category):
+    #   status    : "closed" (default) | "under_contract" | "loi" | "active"
+    #               "loi" = letter of intent signed, no executed PSA yet. Kept
+    #               distinct from under_contract on purpose -- an LOI is
+    #               non-binding, and advertising it as a contract discourages
+    #               backup interest on a deal that can still fall apart.
+    #   category  : "reo" | "commercial" | "residential"   -- drives grouping
+    #   addr1     : street address            addr2 : city, state ZIP
+    #   price     : number, or omit to withhold the figure
+    #   close_date: "Mar 2026", or omit
+    #   side      : "Listed" | "Sold" | "Both"
+    #   source    : "GSMLS" | "LoopNet" | "CoStar" | "Off-market"
+    #   note      : short free-text line, e.g. "16-unit stabilized building"
+    #
+    # NOTE: this list is for transactions Dave REPRESENTED -- listed, sold, or
+    # under contract. BPO assignments do NOT belong here. A BPO is confidential
+    # work product for the ordering servicer, and publishing the address would
+    # disclose that a specific property is in distress. BPO volume is shown as
+    # an aggregate count in CREDENTIAL_STATS below instead.
+    SOLD_INLINE = [
+        # Seed data so the pages are correct immediately. Once these are entered
+        # in the CMS they are superseded automatically (see _load_sold) and can
+        # be deleted from here.
+        {"status": "under_contract", "category": "commercial",
+         "addr1": "415 Totowa Rd", "addr2": "Totowa, NJ 07512",
+         "side": "Listed", "source": "GSMLS",
+         "note": "Commercial office building."},
+        # LOI signed, no executed PSA -- deliberately NOT under_contract.
+        {"status": "loi", "category": "commercial",
+         "addr1": "285 Route 46", "addr2": "Dover, NJ 07801",
+         "side": "Listed", "source": "LoopNet",
+         "note": "Industrial building."},
+    ]
+
+    # Aggregate credibility figures. Addresses never appear here -- these are
+    # counts Dave can stand behind publicly. Set a value to None to hide that
+    # tile. Update the numbers as they grow.
+    CREDENTIAL_STATS = [
+        # (number, label)
+        ("4,000+", "BPOs completed for national servicers"),
+        ("1,000+", "REO assets managed to disposition"),
+        ("30+",    "Years licensed in New Jersey"),
+    ]
+    # The years tile says New Jersey specifically, not "NJ & NY". Dave has been
+    # licensed in NJ for 30+ years but in NY only about a year -- a combined
+    # "30+ years in NJ & NY" would overstate the New York tenure.
+
+    def _load_sold():
+        import json, os
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "site", "_data", "sold.json")
+        rows = []
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    data = json.load(fh)
+                rows = data.get("transactions", data) if isinstance(data, dict) else data
+            except Exception as exc:            # never let bad data break the build
+                print("WARNING: could not read sold.json (%s) -- skipping" % exc)
+                rows = []
+        # JSON (CMS-managed) wins over SOLD_INLINE for the same address, so a
+        # property seeded in code here disappears cleanly the moment Dave adds
+        # it in the CMS -- no duplicate cards during the handover.
+        merged, seen = [], set()
+        for r in list(rows) + list(SOLD_INLINE):
+            if not r.get("addr1"):
+                continue
+            key = " ".join(str(r["addr1"]).lower().split())
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(r)
+        return merged
+
+    SOLD = _load_sold()
+
+    SOLD_GROUPS = [
+        ("reo",         "REO &amp; Foreclosure",
+         "Bank-owned and distressed assets taken from assignment through closing."),
+        ("commercial",  "Commercial &amp; Multi-Family",
+         "Investment, mixed-use and multi-family transactions."),
+        ("residential", "Residential",
+         "Single-family and condo closings across NJ and NY."),
+    ]
+
+    def sold_card(row):
+        import html as _h
+        esc = lambda v: _h.escape(str(v)) if v else ""
+        price = row.get("price")
+        bits = []
+        if row.get("close_date"):
+            bits.append('<span class="sc-date">%s</span>' % esc(row["close_date"]))
+        _chip = {"under_contract": "Under Contract",
+                 "loi": "LOI Signed",
+                 "active": "On Market"}.get(row.get("status"))
+        if _chip:
+            bits.append('<span class="sc-pending">%s</span>' % _chip)
+        if row.get("side"):
+            bits.append('<span class="sc-side">%s</span>' % esc(row["side"]))
+        if row.get("source") and row["source"] != "GSMLS":
+            # Worth surfacing: it signals reach beyond the residential MLS.
+            bits.append('<span class="sc-src">%s</span>' % esc(row["source"]))
+        meta = '<div class="sc-meta">%s</div>' % "".join(bits) if bits else ""
+        photo = ('<div class="sc-photo" style="background-image:url(\'%s\')"></div>'
+                 % esc(row["photo"])) if row.get("photo") else ""
+        return """<article class="sc-card%(pcls)s">
+      %(photo)s
+      <div class="sc-body">
+      <div class="sc-price">%(price)s</div>
+      <div class="sc-addr">%(a1)s</div>
+      <div class="sc-sub">%(a2)s</div>
+      %(meta)s
+      %(note)s
+      </div>
+    </article>""" % {
+            "photo": photo, "pcls": " sc-has-photo" if photo else "",
+            "price": (money(price) if price else {
+                          "under_contract": "Under Contract",
+                          "loi": "Letter of Intent",
+                          "active": "For Sale",
+                      }.get(row.get("status"), "Closed")),
+            "a1": esc(row.get("addr1")), "a2": esc(row.get("addr2")), "meta": meta,
+            "note": '<div class="sc-note">%s</div>' % esc(row["note"]) if row.get("note") else "",
+        }
+
+    def stats_block():
+        tiles = [(n, l) for n, l in CREDENTIAL_STATS if n]
+        if not tiles:
+            return ""
+        return """<section class="section band"><div class="container">
+<div class="sc-stats">%s</div>
+</div></section>""" % "".join(
+            '<div class="sc-stat"><div class="sc-stat-n">%s</div>'
+            '<div class="sc-stat-l">%s</div></div>' % (n, l) for n, l in tiles)
+
+    def sold_sections():
+        """Closed transactions, grouped by asset type. Under-contract deals get
+        their own section below -- they are real work but they are not sales,
+        and listing them as sold would be inaccurate."""
+        out = []
+        closed = [r for r in SOLD if r.get("status", "closed") == "closed"]
+        pending = [r for r in SOLD
+                   if r.get("status") in ("under_contract", "loi", "active")]
+
+        for key, title, blurb in SOLD_GROUPS:
+            rows = [r for r in closed if r.get("category") == key]
+            if not rows:
+                continue
+            out.append("""<section class="section"><div class="container">
+<h2 class="section-title">%s</h2>
+<p class="lead">%s</p>
+<div class="sc-grid">%s</div>
+</div></section>""" % (title, blurb, "\n".join(sold_card(r) for r in rows)))
+
+        if pending:
+            out.append("""<section class="section band"><div class="container">
+<h2 class="section-title">Currently In Play</h2>
+<p class="lead">Active listings and deals working toward closing.</p>
+<div class="sc-grid">%s</div>
+</div></section>""" % "\n".join(sold_card(r) for r in pending))
+
+        out.append(stats_block())
+        return "\n".join(x for x in out if x)
+
+    SOLD_EMPTY = """<section class="section"><div class="container">
+<div class="prose" style="max-width:760px">
+<p>David&rsquo;s closed transactions span bank-owned and foreclosure assets, commercial and
+multi-family investments, and residential sales across New Jersey and New York.</p>
+<p>A full transaction history &mdash; including REO dispositions handled from initial
+assignment through closing &mdash; is available on request.</p>
+<p><a class="btn btn-gold" href="/contact">Request the transaction history</a></p>
+</div>
+</div></section>"""
+
+    sold_body = head_block(
+        "Sold Listings",
+        "Closed transactions represented by David Wainwright Jr &mdash; REO, commercial and residential."
+    ) + (sold_sections() if SOLD else (SOLD_EMPTY + stats_block()))
+
+    def commercial_closed_block():
+        """Commercial track record for /commercial, drawn from the same list."""
+        rows = [r for r in SOLD if r.get("category") == "commercial"]
+        if not rows:
+            return ""
+        return """<div style="margin-top:34px">
+<h2 class="section-title">Recent Commercial Transactions</h2>
+<div class="sc-grid">%s</div>
+</div>""" % "\n".join(sold_card(r) for r in rows)
     page("sold-listing", "Sold Listings | David Wainwright Jr, RE/MAX Select",
          "Recently sold homes and commercial properties represented by David Wainwright Jr.",
-         sold_body, akey="buy")
+         sold_body, akey="buy", extra_head=SOLD_CSS)
 
     # ---------------- CALCULATORS (visual placeholders) ----------------
     def calc_page(slug, title, headline, rows, result_label, result_val, akey):
@@ -302,13 +523,14 @@ def run(g):
         for (t, h, d) in reo_services)
     reo_body = head_block("REO Process &amp; Services in NJ &amp; NY",
         "Full-service REO, BPO and default management for asset managers, servicers and investors across New Jersey and New York.") + """
+%(stats)s
 <section class="section"><div class="container">
 <div class="svc-list">%(svc)s</div>
 <div style="text-align:center;margin-top:44px"><a class="btn btn-gold btn-lg" href="/contact">Request REO Services</a></div>
-</div></section>""" % {"svc": svchtml}
+</div></section>""" % {"svc": svchtml, "stats": stats_block()}
     page("reo-services", "REO Process & Services in NJ & NY | David Wainwright Jr",
          "REO, BPO, property preservation and default management services from David Wainwright Jr, NRBA member, RE/MAX Select.",
-         reo_body, akey="reo")
+         reo_body, akey="reo", extra_head=SOLD_CSS)
 
     # ---------------- REO SUBPAGES ----------------
     def prose_page(slug, title, headline, blocks, akey="reo", cta="Request This Service"):
@@ -379,12 +601,11 @@ def run(g):
 <p>It&rsquo;s worth noting that small commercial properties often catch the eye of local investors rather than large national firms. That&rsquo;s where we shine! Need assistance with valuation or disposal of your commercial assets? Don&rsquo;t hesitate to reach out.</p>
 </div>
 %(search)s
-<div class="cards" style="margin-top:34px">%(com)s</div>
-%(ph)s
-</div></section>""" % {"search": search_widget(), "com": COM, "ph": PH}
+%(closed)s
+</div></section>""" % {"search": search_widget(), "closed": commercial_closed_block()}
     page("commercial", "Commercial Real Estate in NJ & NY | David Wainwright Jr, RE/MAX Select",
          "Commercial and mixed-use real estate services for buyers, sellers and investors in NJ & NY.",
-         commercial_body, akey="commercial")
+         commercial_body, akey="commercial", extra_head=SOLD_CSS)
 
     # ---------------- BLOG ----------------
     posts = [
