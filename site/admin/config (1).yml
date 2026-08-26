@@ -1,0 +1,214 @@
+backend:
+  name: github
+  repo: davewjr7-cmyk/dwainwright-realty-nj
+  branch: main
+  auth_scope: repo
+
+# Where uploaded images are stored and served from
+media_folder: "site/assets/img/blog"
+public_folder: "/assets/img/blog"
+
+site_url: https://dwainwrightrealty.com
+display_url: https://dwainwrightrealty.com
+logo_url: https://dwainwrightrealty.com/assets/img/logo.png
+
+# ──────────────────────────────────────────────
+# COLLECTIONS
+# ──────────────────────────────────────────────
+collections:
+
+  # ── BLOG / MARKET INSIGHTS ──
+  - name: "blog"
+    label: "Market Insights / Blog"
+    label_singular: "Post"
+    folder: "site/blog/posts"
+    create: true
+    delete: true
+    extension: "md"
+    format: "frontmatter"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} — {{date}}"
+    sortable_fields: ["date", "title", "category"]
+    view_filters:
+      - label: "Featured"
+        field: featured
+        pattern: true
+    view_groups:
+      - label: "Category"
+        field: category
+    fields:
+      - label: "Post Title"
+        name: "title"
+        widget: "string"
+        hint: "Keep it clear and specific — e.g. 'Morris County Market Update: July 2026'"
+
+      - label: "Publish Date"
+        name: "date"
+        widget: "datetime"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        default: ""
+
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        options:
+          - "Market Update"
+          - "REO & Foreclosure"
+          - "Commercial Real Estate"
+          - "Residential"
+          - "NRBA News"
+          - "Tips for Sellers"
+          - "Tips for Buyers"
+          - "Community"
+        default: "Market Update"
+
+      - label: "Featured Image"
+        name: "image"
+        widget: "image"
+        required: false
+        hint: "Recommended size: 1200 × 630 px. Will appear on the blog listing and at the top of the post."
+
+      - label: "Summary"
+        name: "summary"
+        widget: "text"
+        hint: "2–3 sentences shown on the blog listing page. Keep it punchy."
+
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
+        hint: "Write the full post here. Use headings, bullet points, and bold text to make it scannable."
+
+      - label: "Author"
+        name: "author"
+        widget: "string"
+        default: "David Wainwright Jr."
+        hint: "Leave as-is unless a guest is writing."
+
+      - label: "Feature on Homepage?"
+        name: "featured"
+        widget: "boolean"
+        default: false
+        hint: "If checked, this post may appear in the featured section on the homepage."
+
+  # ── CLOSED & PENDING TRANSACTIONS ──
+  # One JSON file holding every transaction shown on /sold-listing and the
+  # commercial page. A file collection (not a folder) so the whole list is
+  # edited on one screen -- add, reorder and delete rows without hunting
+  # through separate files.
+  - name: "transactions"
+    label: "Sold & Pending Transactions"
+    files:
+      - name: "list"
+        label: "Transaction List"
+        file: "site/_data/sold.json"
+        format: "json"
+        media_folder: "/site/assets/img/properties"
+        public_folder: "/assets/img/properties"
+        fields:
+          - label: "Transactions"
+            name: "transactions"
+            widget: "list"
+            label_singular: "Property"
+            summary: "{{fields.addr1}} — {{fields.status}}"
+            fields:
+              - label: "Street Address"
+                name: "addr1"
+                widget: "string"
+                hint: "e.g. 285 Route 46"
+
+              - label: "City, State ZIP"
+                name: "addr2"
+                widget: "string"
+                required: false
+                hint: "e.g. Dover, NJ 07801"
+
+              - label: "Status"
+                name: "status"
+                widget: "select"
+                default: "closed"
+                options:
+                  - { label: "Closed / Sold", value: "closed" }
+                  - { label: "Under Contract (PSA signed)", value: "under_contract" }
+                  - { label: "Letter of Intent signed", value: "loi" }
+                  - { label: "On Market", value: "active" }
+                hint: "Under Contract means an executed purchase and sale agreement. Use Letter of Intent for a signed LOI with no PSA yet — they are not the same thing."
+
+              - label: "Property Type"
+                name: "category"
+                widget: "select"
+                default: "residential"
+                options:
+                  - { label: "REO / Foreclosure", value: "reo" }
+                  - { label: "Commercial / Multi-Family", value: "commercial" }
+                  - { label: "Residential", value: "residential" }
+                hint: "Controls which section of the page it appears in."
+
+              - label: "Property Type"
+                name: "prop_type"
+                widget: "select"
+                required: false
+                options:
+                  - "Industrial"
+                  - "Warehouse / Flex"
+                  - "Office"
+                  - "Retail"
+                  - "Mixed-Use"
+                  - "Multi-Family"
+                  - "Land"
+                  - "Single Family"
+                  - "Condo"
+                hint: "The specific asset type. Shows as a tag on the card."
+
+              - label: "Building Size (SF)"
+                name: "sqft"
+                widget: "number"
+                required: false
+                value_type: "int"
+                hint: "Square feet, digits only — e.g. 42000. Shows as '42,000 SF'."
+
+              - label: "Property Description"
+                name: "description"
+                widget: "text"
+                required: false
+                hint: "A paragraph or two. What it is, why it matters, who it suits. Blank lines start a new paragraph. Do not include anything confidential to the seller."
+
+              - label: "Photos"
+                name: "photos"
+                widget: "list"
+                required: false
+                field: { label: "Photo", name: "image", widget: "image" }
+                hint: "First photo is the large one; the rest appear as a strip beneath it. Up to 5 show. Only photos you have the right to publish."
+
+              - label: "Price"
+                name: "price"
+                widget: "number"
+                required: false
+                value_type: "int"
+                hint: "Leave blank to withhold. On a pending deal, blank is usually right — a price on a pending card reads as the sale price."
+
+              - label: "Close Date"
+                name: "close_date"
+                widget: "string"
+                required: false
+                hint: "e.g. Mar 2026. Leave blank if not closed."
+
+              - label: "Side Represented"
+                name: "side"
+                widget: "select"
+                required: false
+                options: ["Listed", "Sold", "Both"]
+
+              - label: "Source"
+                name: "source"
+                widget: "select"
+                required: false
+                default: "GSMLS"
+                options: ["GSMLS", "LoopNet", "CoStar", "Off-market"]
+                hint: "Anything other than GSMLS shows as a tag on the card."
+
+              - label: "Note"
+                name: "note"
+                widget: "string"
+                required: false
+                hint: "One short line, e.g. '16-unit stabilized building'. Never include anything confidential to the client."
