@@ -108,9 +108,9 @@ def header(akey=""):
 # "#" is worse than no icon, and all six pointed there until now. Add a URL to
 # bring a platform back into the row; blank it out to drop it.
 SOCIAL = [
- ("Facebook", "https://www.facebook.com/RemaxDaveWainwright/",
+ ("Facebook", "https://www.facebook.com/WainwrightRealtyNJ",
   "M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"),
- ("LinkedIn", "https://www.linkedin.com/in/david-wainwright-jr-89444210",
+ ("LinkedIn", "https://www.linkedin.com/in/david-wainwright-jr-nrba-89444210/",
   "M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21H9z"),
  ("Instagram", "https://www.instagram.com/davewjr7/",
   "M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.9c-.1 3.2-1.6 4.8-4.9 4.9-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.1 15.6 2.1 15.2 2.1 12s0-3.6.1-4.9C2.3 3.9 3.8 2.3 7.1 2.2 8.4 2.2 8.8 2.2 12 2.2zm0 3a6.8 6.8 0 1 0 0 13.6A6.8 6.8 0 0 0 12 5.2zm0 11.2a4.4 4.4 0 1 1 0-8.8 4.4 4.4 0 0 1 0 8.8zM18.4 5a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z"),
