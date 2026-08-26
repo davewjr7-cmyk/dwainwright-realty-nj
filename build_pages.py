@@ -659,8 +659,10 @@ assignment through closing &mdash; is available on request.</p>
     commercial_body = head_block("Search for Commercial Properties", "Commercial and mixed-use real estate expertise across New Jersey and New York.") + """
 <section class="section"><div class="container">
 <div class="prose" style="max-width:900px">
-<p>We have years of experience representing buyers and sellers of commercial properties in New Jersey and New York. Many properties are mixed-use as well &mdash; we&rsquo;ll help you navigate the neighborhoods to find the best fit or the best buyer.</p>
-<p>It&rsquo;s worth noting that small commercial properties often catch the eye of local investors rather than large national firms. That&rsquo;s where we shine! Need assistance with valuation or disposal of your commercial assets? Don&rsquo;t hesitate to reach out.</p>
+<p>Commercial property is where valuation experience earns its keep. Across thirty years in New Jersey we have completed more than 4,000 broker price opinions and taken over 1,000 REO assets from assignment through disposition. That work builds one habit above all others: pricing a building on what the market will actually pay, not on what anyone hopes it is worth.</p>
+<p>We represent buyers and sellers across industrial and flex space, office, retail, mixed-use and multi-family throughout New Jersey and New York. Small and mid-size commercial gets overlooked by the national firms &mdash; which is exactly the segment regional investors are hunting, and the one we know best.</p>
+<p>Commercial rarely sells out of the residential MLS. We market where commercial buyers actually look: LoopNet, CoStar, direct to an investor and REO network built over three decades, and quietly off-market when discretion serves the seller better than exposure does.</p>
+<p>Whether you are selling, acquiring, or you simply need a defensible number before deciding anything &mdash; start with a conversation.</p>
 </div>
 <div class="mid-search">%(search)s</div>
 %(closed)s
