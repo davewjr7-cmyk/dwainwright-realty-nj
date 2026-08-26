@@ -90,3 +90,95 @@ collections:
         widget: "boolean"
         default: false
         hint: "If checked, this post may appear in the featured section on the homepage."
+
+  # ── CLOSED & PENDING TRANSACTIONS ──
+  # One JSON file holding every transaction shown on /sold-listing and the
+  # commercial page. A file collection (not a folder) so the whole list is
+  # edited on one screen -- add, reorder and delete rows without hunting
+  # through separate files.
+  - name: "transactions"
+    label: "Sold & Pending Transactions"
+    files:
+      - name: "list"
+        label: "Transaction List"
+        file: "site/_data/sold.json"
+        format: "json"
+        media_folder: "/site/assets/img/properties"
+        public_folder: "/assets/img/properties"
+        fields:
+          - label: "Transactions"
+            name: "transactions"
+            widget: "list"
+            label_singular: "Property"
+            summary: "{{fields.addr1}} — {{fields.status}}"
+            fields:
+              - label: "Street Address"
+                name: "addr1"
+                widget: "string"
+                hint: "e.g. 285 Route 46"
+
+              - label: "City, State ZIP"
+                name: "addr2"
+                widget: "string"
+                required: false
+                hint: "e.g. Dover, NJ 07801"
+
+              - label: "Status"
+                name: "status"
+                widget: "select"
+                default: "closed"
+                options:
+                  - { label: "Closed / Sold", value: "closed" }
+                  - { label: "Under Contract (PSA signed)", value: "under_contract" }
+                  - { label: "Letter of Intent signed", value: "loi" }
+                  - { label: "On Market", value: "active" }
+                hint: "Under Contract means an executed purchase and sale agreement. Use Letter of Intent for a signed LOI with no PSA yet — they are not the same thing."
+
+              - label: "Property Type"
+                name: "category"
+                widget: "select"
+                default: "residential"
+                options:
+                  - { label: "REO / Foreclosure", value: "reo" }
+                  - { label: "Commercial / Multi-Family", value: "commercial" }
+                  - { label: "Residential", value: "residential" }
+                hint: "Controls which section of the page it appears in."
+
+              - label: "Photo"
+                name: "photo"
+                widget: "image"
+                required: false
+                hint: "Landscape works best, roughly 800 x 500. Only use photos you have the rights to publish."
+
+              - label: "Price"
+                name: "price"
+                widget: "number"
+                required: false
+                value_type: "int"
+                hint: "Leave blank to withhold. On a pending deal, blank is usually right — a price on a pending card reads as the sale price."
+
+              - label: "Close Date"
+                name: "close_date"
+                widget: "string"
+                required: false
+                hint: "e.g. Mar 2026. Leave blank if not closed."
+
+              - label: "Side Represented"
+                name: "side"
+                widget: "select"
+                required: false
+                options: ["Listed", "Sold", "Both"]
+
+              - label: "Source"
+                name: "source"
+                widget: "select"
+                required: false
+                default: "GSMLS"
+                options: ["GSMLS", "LoopNet", "CoStar", "Off-market"]
+                hint: "Anything other than GSMLS shows as a tag on the card."
+
+              - label: "Note"
+                name: "note"
+                widget: "string"
+                required: false
+                hint: "One short line, e.g. '16-unit stabilized building'. Never include anything confidential to the client."
