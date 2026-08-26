@@ -1,8 +1,12 @@
 # netlify.toml — Wainwright Realty
-# Runs the posts index builder on every deploy, then serves the /site folder.
+# Regenerates the site from build.py, rebuilds the posts index, then serves /site.
+#
+# build.py is the source of truth for every page in site/. Running it here means
+# the generated index.html files no longer have to be committed by hand -- edit
+# build.py / build_pages.py, push, and Netlify renders the 27 pages on deploy.
 
 [build]
-  command = "python scripts/build_posts_index.py"
+  command = "python build.py && python scripts/build_posts_index.py"
   publish = "site"
 
 # ── Netlify Identity: let the admin panel handle its own routing ──
