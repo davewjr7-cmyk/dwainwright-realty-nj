@@ -106,7 +106,7 @@ def run(g):
     <h1>David Wainwright Jr &mdash; Morris County Commercial &amp; REO Properties Specialist &mdash; Representing NJ &amp; NY</h1>
     <p class="sub">Expert Commercial Real Estate and REO property services in Morris County, New Jersey. David Wainwright Jr delivers proven results in foreclosed homes, office buildings, and investment properties across Morris and Sussex counties.</p>
   </div>
-  <div style="padding:20px;width:100%;"></div>
+  <div style="padding:20px;width:100%%;"></div>
 </section>
 <div class="container">%(search)s</div>
 
