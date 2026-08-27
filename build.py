@@ -1270,6 +1270,10 @@ PLACEHOLDER = ('<div class="placeholder-note"><strong>Live listings placeholder.
 
 # ================= build pages below (defined in build_pages.py section) =================
 if __name__ == "__main__":
+    os.makedirs(ROOT, exist_ok=True)
+    with open(os.path.join(ROOT, "build.txt"), "w", encoding="utf-8") as _fh:
+        _fh.write(BUILD_ID + "\n")
+    print("build id", BUILD_ID)
     write_embedded_images()
     import build_pages
     build_pages.run(globals())
