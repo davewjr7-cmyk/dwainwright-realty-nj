@@ -149,6 +149,29 @@ def social_links():
     return "\n      ".join(out)
 
 
+def build_stamp():
+    """Short content hash of the generator sources, emitted into every page.
+
+    Successive versions of this file differ by a handful of bytes, which makes
+    "check the file size" useless for telling them apart -- and a stale upload
+    then looks identical to a successful one from both ends. This stamp is
+    visible in the page source, so which build is actually live can be read off
+    the deployed site instead of inferred.
+    """
+    import hashlib
+    h = hashlib.sha256()
+    here = os.path.dirname(os.path.abspath(__file__))
+    for name in ("build.py", "build_pages.py"):
+        path = os.path.join(here, name)
+        if os.path.exists(path):
+            with open(path, "rb") as fh:
+                h.update(fh.read())
+    return h.hexdigest()[:10]
+
+
+BUILD_ID = build_stamp()
+
+
 def footer():
     return """<footer class="site-footer">
   <div class="container">
@@ -1163,6 +1186,7 @@ def page(path, title, description, body, akey="", extra_head=""):
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- build %(build_id)s -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>%(title)s</title>
 <meta name="description" content="%(desc)s">
@@ -1183,7 +1207,7 @@ def page(path, title, description, body, akey="", extra_head=""):
 </body>
 </html>""" % {
         "title": html.escape(title), "desc": html.escape(description),
-        "extra": extra_head, "footer_css": FOOTER_CSS,
+        "extra": extra_head, "footer_css": FOOTER_CSS, "build_id": BUILD_ID,
         "header": header(akey), "body": body, "footer": footer(),
     }
     outdir = os.path.join(ROOT, path)
